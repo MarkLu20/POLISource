@@ -1,0 +1,48 @@
+// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
+
+/*=============================================================================
+
+=============================================================================*/
+
+#include "/Engine/Private/Common.ush"
+//#include "DeferredShadingCommon.ush"
+//#include "BRDF.ush"
+//#include "SHCommon.ush"
+//#include "ReflectionEnvironmentShared.ush"
+//#include "MonteCarlo.ush"
+//#include "SkyLightingShared.ush"
+
+struct FThermodynamicVSOutput
+{
+	float2 Texcoord : TEXCOORD0;
+	float Heat : TEXCOORD1;
+	float4 Position : SV_POSITION;
+};
+
+float ThermodynamicRadius;
+float4x4 ThermodynamicViewProjection;
+
+void ThermodynamicVS(
+	in float3 InPosition		: ATTRIBUTE0,
+	in float3 InWorldPosition	: ATTRIBUTE1,
+	in float InHeat				: ATTRIBUTE2,
+	out FThermodynamicVSOutput Out
+	)
+{	
+	Out.Position = mul(float4(InPosition * ThermodynamicRadius + InWorldPosition, 1), ThermodynamicViewProjection);
+	//Out.Position = mul(float4(InPosition * 500, 1), ThermodynamicViewProjection);
+	Out.Heat = InHeat;
+	Out.Texcoord = InPosition.xy;
+}
+
+void ThermodynamicPS(
+	FThermodynamicVSOutput Input,
+	out float4 OutColor : SV_Target0
+	)
+{ 
+	//float v = saturate(Input.Heat - length(Input.Texcoord));
+	//OutColor = v;
+
+	float v = saturate(1 - length(Input.Texcoord));
+	OutColor = Input.Heat * v;
+}
